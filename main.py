@@ -6,6 +6,35 @@ import requests
 import random
 import asyncio
 import os
+from aiohttp import web
+import threading
+
+class BotClient(discord.Client):
+    def __init__(self):
+        super().__init__(intents=discord.Intents.all())
+        self.synced = False
+        
+    async def on_ready(self):
+        await self.wait_until_ready()
+        if not self.synced:
+            await tree.sync()
+            self.synced = True
+        
+        print(f'Bot logged in as {self.user}')
+        game = discord.Game('Made By Bini in Nexxa Interaction™')
+        await self.change_presence(status=discord.Status.online, activity=game)
+
+# 웹 서버 설정
+async def handle(request):
+    return web.Response(text="Bot is running!")
+
+async def run_web_server():
+    app = web.Application()
+    app.router.add_get('/', handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', int(os.environ.get('PORT', 8080)))
+    await site.start()
 
 class BotClient(discord.Client):
    def __init__(self):
@@ -419,5 +448,11 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
 
 # 봇 실행
 if __name__ == "__main__":
-   TOKEN = os.environ['DISCORD_TOKEN']  # 환경 변수에서 토큰 가져오기
-   client.run(TOKEN)
+    # 웹 서버와 봇을 함께 실행
+    async def start():
+        await run_web_server()
+        TOKEN = os.environ['DISCORD_TOKEN']
+        await client.start(TOKEN)
+
+    # asyncio로 웹 서버와 봇을 함께 실행
+    asyncio.run(start())
