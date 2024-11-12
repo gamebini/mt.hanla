@@ -419,6 +419,5 @@ async def on_voice_state_update(member: discord.Member, before: discord.VoiceSta
 
 # 봇 실행
 if __name__ == "__main__":
-   # 봇 토큰
-   TOKEN = ""
+   TOKEN = os.environ['DISCORD_TOKEN']  # 환경 변수에서 토큰 가져오기
    client.run(TOKEN)
